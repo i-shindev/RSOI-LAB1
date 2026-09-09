@@ -8,7 +8,7 @@ use axum::{
 };
 use serde::Serialize;
 
-pub type ValidationErrors = BTreeMap<String, String>;
+use crate::service::{ServiceError, ValidationErrors};
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
@@ -23,17 +23,27 @@ pub struct ValidationErrorResponse {
 }
 
 #[derive(Debug)]
-pub enum AppError {
-    NotFound(i32),
-    Validation(ValidationErrors),
+pub enum ApiError {
+    Service(ServiceError),
     MalformedBody(String),
-    Internal(String),
 }
 
-impl IntoResponse for AppError {
+impl From<ServiceError> for ApiError {
+    fn from(error: ServiceError) -> Self {
+        ApiError::Service(error)
+    }
+}
+
+impl From<JsonRejection> for ApiError {
+    fn from(rejection: JsonRejection) -> Self {
+        ApiError::MalformedBody(rejection.body_text())
+    }
+}
+
+impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         match self {
-            AppError::NotFound(id) => (
+            ApiError::Service(ServiceError::NotFound(id)) => (
                 StatusCode::NOT_FOUND,
                 Json(ErrorResponse {
                     message: format!("Person with id {id} not found"),
@@ -41,7 +51,7 @@ impl IntoResponse for AppError {
             )
                 .into_response(),
 
-            AppError::Validation(errors) => (
+            ApiError::Service(ServiceError::Validation(errors)) => (
                 StatusCode::BAD_REQUEST,
                 Json(ValidationErrorResponse {
                     message: "Validation failed".to_owned(),
@@ -50,17 +60,8 @@ impl IntoResponse for AppError {
             )
                 .into_response(),
 
-            AppError::MalformedBody(message) => (
-                StatusCode::BAD_REQUEST,
-                Json(ValidationErrorResponse {
-                    message,
-                    errors: ValidationErrors::new(),
-                }),
-            )
-                .into_response(),
-
-            AppError::Internal(cause) => {
-                tracing::error!("internal error: {cause}");
+            ApiError::Service(ServiceError::Storage(cause)) => {
+                tracing::error!("storage failure: {cause}");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(ErrorResponse {
@@ -69,12 +70,15 @@ impl IntoResponse for AppError {
                 )
                     .into_response()
             }
-        }
-    }
-}
 
-impl From<JsonRejection> for AppError {
-    fn from(rejection: JsonRejection) -> Self {
-        AppError::MalformedBody(rejection.body_text())
+            ApiError::MalformedBody(message) => (
+                StatusCode::BAD_REQUEST,
+                Json(ValidationErrorResponse {
+                    message,
+                    errors: ValidationErrors::new(),
+                }),
+            )
+                .into_response(),
+        }
     }
 }

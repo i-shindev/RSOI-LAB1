@@ -1,11 +1,10 @@
-use std::sync::Arc;
-
 use axum::{routing::get, Router};
 
 use crate::handlers;
 use crate::repository::PersonRepository;
+use crate::service::PersonService;
 
-pub fn router<R: PersonRepository>(repository: Arc<R>) -> Router {
+pub fn router<R: PersonRepository>(service: PersonService<R>) -> Router {
     Router::new()
         .route("/manage/health", get(health))
         .route(
@@ -18,7 +17,7 @@ pub fn router<R: PersonRepository>(repository: Arc<R>) -> Router {
                 .patch(handlers::update_person::<R>)
                 .delete(handlers::delete_person::<R>),
         )
-        .with_state(repository)
+        .with_state(service)
 }
 
 async fn health() -> &'static str {

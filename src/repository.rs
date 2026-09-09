@@ -2,23 +2,33 @@ use std::collections::BTreeMap;
 use std::future::Future;
 use std::sync::{Mutex, MutexGuard};
 
-use crate::error::AppError;
 use crate::models::{NewPerson, Person, PersonPatch};
 
+#[derive(Debug)]
+pub struct RepositoryError(pub String);
+
+impl std::fmt::Display for RepositoryError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(&self.0)
+    }
+}
+
+impl std::error::Error for RepositoryError {}
+
 pub trait PersonRepository: Send + Sync + 'static {
-    fn list(&self) -> impl Future<Output = Result<Vec<Person>, AppError>> + Send;
+    fn list(&self) -> impl Future<Output = Result<Vec<Person>, RepositoryError>> + Send;
 
-    fn find(&self, id: i32) -> impl Future<Output = Result<Option<Person>, AppError>> + Send;
+    fn find(&self, id: i32) -> impl Future<Output = Result<Option<Person>, RepositoryError>> + Send;
 
-    fn create(&self, person: NewPerson) -> impl Future<Output = Result<Person, AppError>> + Send;
+    fn create(&self, person: NewPerson) -> impl Future<Output = Result<Person, RepositoryError>> + Send;
 
     fn update(
         &self,
         id: i32,
         patch: PersonPatch,
-    ) -> impl Future<Output = Result<Option<Person>, AppError>> + Send;
+    ) -> impl Future<Output = Result<Option<Person>, RepositoryError>> + Send;
 
-    fn delete(&self, id: i32) -> impl Future<Output = Result<bool, AppError>> + Send;
+    fn delete(&self, id: i32) -> impl Future<Output = Result<bool, RepositoryError>> + Send;
 }
 
 #[derive(Debug, Default)]
@@ -45,15 +55,15 @@ impl InMemoryPersonRepository {
 }
 
 impl PersonRepository for InMemoryPersonRepository {
-    async fn list(&self) -> Result<Vec<Person>, AppError> {
+    async fn list(&self) -> Result<Vec<Person>, RepositoryError> {
         Ok(self.state().persons.values().cloned().collect())
     }
 
-    async fn find(&self, id: i32) -> Result<Option<Person>, AppError> {
+    async fn find(&self, id: i32) -> Result<Option<Person>, RepositoryError> {
         Ok(self.state().persons.get(&id).cloned())
     }
 
-    async fn create(&self, person: NewPerson) -> Result<Person, AppError> {
+    async fn create(&self, person: NewPerson) -> Result<Person, RepositoryError> {
         let mut state = self.state();
 
         state.last_id += 1;
@@ -69,7 +79,7 @@ impl PersonRepository for InMemoryPersonRepository {
         Ok(stored)
     }
 
-    async fn update(&self, id: i32, patch: PersonPatch) -> Result<Option<Person>, AppError> {
+    async fn update(&self, id: i32, patch: PersonPatch) -> Result<Option<Person>, RepositoryError> {
         let mut state = self.state();
 
         match state.persons.get_mut(&id) {
@@ -81,7 +91,7 @@ impl PersonRepository for InMemoryPersonRepository {
         }
     }
 
-    async fn delete(&self, id: i32) -> Result<bool, AppError> {
+    async fn delete(&self, id: i32) -> Result<bool, RepositoryError> {
         Ok(self.state().persons.remove(&id).is_some())
     }
 }

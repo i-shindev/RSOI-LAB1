@@ -6,8 +6,10 @@ mod handlers;
 mod models;
 mod repository;
 mod routes;
+mod service;
 
 use crate::repository::InMemoryPersonRepository;
+use crate::service::PersonService;
 
 fn port() -> u16 {
     std::env::var("PORT")
@@ -25,7 +27,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .init();
 
-    let app = routes::router(Arc::new(InMemoryPersonRepository::new()));
+    let repository = Arc::new(InMemoryPersonRepository::new());
+    let app = routes::router(PersonService::new(repository));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port()));
     let listener = tokio::net::TcpListener::bind(addr).await?;
