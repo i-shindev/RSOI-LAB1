@@ -2,8 +2,9 @@ use std::net::SocketAddr;
 
 use axum::{routing::get, Router};
 
-/// Port to listen on. Render (and Heroku before it) inject `PORT` into the
-/// environment, so the value must be picked up at runtime.
+mod error;
+mod models;
+
 fn port() -> u16 {
     std::env::var("PORT")
         .ok()
