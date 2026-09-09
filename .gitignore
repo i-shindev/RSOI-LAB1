@@ -1237,3 +1237,8 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+
+### Lab1 (person-service, Rust) overrides
+# Cargo.lock is ignored by the Rust template above, but this is a binary crate:
+# lock the dependency graph so Docker/CI builds are reproducible.
+!Cargo.lock

@@ -1,0 +1,10 @@
+target/
+.git/
+.github/
+postman/
+postgres/
+*.md
+docker-compose.yml
+person-service.yaml
+.gitignore
+.dockerignore

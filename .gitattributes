@@ -1,0 +1,5 @@
+# Store every text file with LF in git, and check it out with LF on every
+# platform. Files from this repository are copied into Linux Docker images
+# (Dockerfile, migrations/*.sql, shell scripts) and a stray CRLF there breaks
+# the build with an unhelpful error.
+* text=auto eol=lf
