@@ -1,9 +1,13 @@
 use std::net::SocketAddr;
-
-use axum::{routing::get, Router};
+use std::sync::Arc;
 
 mod error;
+mod handlers;
 mod models;
+mod repository;
+mod routes;
+
+use crate::repository::InMemoryPersonRepository;
 
 fn port() -> u16 {
     std::env::var("PORT")
@@ -21,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .init();
 
-    let app = Router::new().route("/manage/health", get(health));
+    let app = routes::router(Arc::new(InMemoryPersonRepository::new()));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port()));
     let listener = tokio::net::TcpListener::bind(addr).await?;
@@ -29,8 +33,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     axum::serve(listener, app).await?;
 
     Ok(())
-}
-
-async fn health() -> &'static str {
-    "OK"
 }
