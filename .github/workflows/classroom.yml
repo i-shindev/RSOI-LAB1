@@ -6,6 +6,10 @@ on:
   pull_request:
     branches:
       - master
+
+env:
+  BASE_URL: https://lab1webservice.onrender.com
+
 jobs:
   build:
     name: Autograding
@@ -27,7 +31,29 @@ jobs:
       - name: Run unit tests
         run: cargo test --locked
 
-      # TODO deploy to Render
+      - name: Build Docker image
+        run: docker build -t person-service:${{ github.sha }} .
+
+      - name: Trigger Render deploy
+        if: github.event_name == 'push'
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}" -o /dev/null
+
+      - name: Wait for the new revision to go live
+        if: github.event_name == 'push'
+        run: |
+          echo "waiting for ${GITHUB_SHA} at ${BASE_URL}"
+          for attempt in $(seq 1 60); do
+            body=$(curl -fsS --max-time 20 "${BASE_URL}/manage/health" || true)
+            live=$(printf '%s' "${body}" | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "${live}" = "${GITHUB_SHA}" ]; then
+              echo "revision ${GITHUB_SHA} is live after ${attempt} attempt(s)"
+              exit 0
+            fi
+            echo "attempt ${attempt}/60: live revision is '${live:-unknown}'"
+            sleep 15
+          done
+          echo "::error::timed out after 15 minutes waiting for ${GITHUB_SHA}"
+          exit 1
 
       - name: Run API Tests
         uses: matt-ball/newman-action@master

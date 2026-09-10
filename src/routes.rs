@@ -1,4 +1,5 @@
-use axum::{routing::get, Router};
+use axum::{routing::get, Json, Router};
+use serde_json::{json, Value};
 
 use crate::handlers;
 use crate::repository::PersonRepository;
@@ -20,6 +21,9 @@ pub fn router<R: PersonRepository>(service: PersonService<R>) -> Router {
         .with_state(service)
 }
 
-async fn health() -> &'static str {
-    "OK"
+async fn health() -> Json<Value> {
+    Json(json!({
+        "status": "OK",
+        "commit": std::env::var("RENDER_GIT_COMMIT").ok(),
+    }))
 }
