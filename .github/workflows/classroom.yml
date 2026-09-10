@@ -15,7 +15,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      # TODO build, test and deploy project
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --release --locked
+
+      - name: Run unit tests
+        run: cargo test --locked
+
+      # TODO deploy to Render
 
       - name: Run API Tests
         uses: matt-ball/newman-action@master
