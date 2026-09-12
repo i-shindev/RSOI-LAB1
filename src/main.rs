@@ -1,17 +1,14 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+mod api;
 mod config;
-mod error;
-mod handlers;
-mod models;
-mod postgres;
+mod domain;
 mod repository;
-mod routes;
 mod service;
 
 use crate::config::Config;
-use crate::postgres::PgPersonRepository;
+use crate::repository::PgPersonRepository;
 use crate::service::PersonService;
 
 #[tokio::main]
@@ -29,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         PgPersonRepository::connect(&config.database_url, config.max_connections).await?;
     tracing::info!("connected to the database");
 
-    let app = routes::router(PersonService::new(Arc::new(repository)));
+    let app = api::router(PersonService::new(Arc::new(repository)));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     let listener = tokio::net::TcpListener::bind(addr).await?;

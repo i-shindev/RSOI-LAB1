@@ -1,7 +1,7 @@
 use axum::{routing::get, Json, Router};
 use serde_json::{json, Value};
 
-use crate::handlers;
+use super::handlers;
 use crate::repository::PersonRepository;
 use crate::service::PersonService;
 

@@ -1,8 +1,8 @@
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{FromRow, PgPool, Row};
 
-use crate::models::{NewPerson, Person, PersonPatch};
-use crate::repository::{PersonRepository, RepositoryError};
+use super::{PersonRepository, RepositoryError};
+use crate::domain::{NewPerson, Person, PersonPatch};
 
 const COLUMNS: &str = "id, name, age, address, work";
 
@@ -41,22 +41,20 @@ impl PgPersonRepository {
 
 impl PersonRepository for PgPersonRepository {
     async fn list(&self) -> Result<Vec<Person>, RepositoryError> {
-        let persons = sqlx::query_as::<_, Person>(&format!(
-            "SELECT {COLUMNS} FROM persons ORDER BY id"
-        ))
-        .fetch_all(&self.pool)
-        .await?;
+        let persons =
+            sqlx::query_as::<_, Person>(&format!("SELECT {COLUMNS} FROM persons ORDER BY id"))
+                .fetch_all(&self.pool)
+                .await?;
 
         Ok(persons)
     }
 
     async fn find(&self, id: i32) -> Result<Option<Person>, RepositoryError> {
-        let person = sqlx::query_as::<_, Person>(&format!(
-            "SELECT {COLUMNS} FROM persons WHERE id = $1"
-        ))
-        .bind(id)
-        .fetch_optional(&self.pool)
-        .await?;
+        let person =
+            sqlx::query_as::<_, Person>(&format!("SELECT {COLUMNS} FROM persons WHERE id = $1"))
+                .bind(id)
+                .fetch_optional(&self.pool)
+                .await?;
 
         Ok(person)
     }

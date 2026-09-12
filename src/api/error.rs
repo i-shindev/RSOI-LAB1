@@ -8,7 +8,8 @@ use axum::{
 };
 use serde::Serialize;
 
-use crate::service::{ServiceError, ValidationErrors};
+use crate::domain::ValidationErrors;
+use crate::service::ServiceError;
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
