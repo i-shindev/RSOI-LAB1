@@ -1,8 +1,8 @@
 use axum::{routing::get, Json, Router};
 use serde_json::{json, Value};
 
-use crate::handlers;
-use crate::repository::PersonRepository;
+use super::handlers;
+use crate::domain::PersonRepository;
 use crate::service::PersonService;
 
 pub fn router<R: PersonRepository>(service: PersonService<R>) -> Router {
