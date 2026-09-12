@@ -1,12 +1,7 @@
-mod error;
-mod postgres;
-
 use std::future::Future;
 
-use crate::domain::{NewPerson, Person, PersonPatch};
-
-pub use error::RepositoryError;
-pub use postgres::PgPersonRepository;
+use super::error::RepositoryError;
+use super::person::{NewPerson, Person, PersonPatch};
 
 pub trait PersonRepository: Send + Sync + 'static {
     fn list(&self) -> impl Future<Output = Result<Vec<Person>, RepositoryError>> + Send;

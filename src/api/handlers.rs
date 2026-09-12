@@ -7,7 +7,7 @@ use axum::{
 
 use super::dto::{PersonPatchRequest, PersonRequest, PersonResponse};
 use super::error::ApiError;
-use crate::repository::PersonRepository;
+use crate::domain::PersonRepository;
 use crate::service::PersonService;
 
 pub async fn list_persons<R: PersonRepository>(

@@ -2,8 +2,7 @@ mod error;
 
 use std::sync::Arc;
 
-use crate::domain::{self, NewPersonInput, Person, PersonPatchInput};
-use crate::repository::PersonRepository;
+use crate::domain::{self, NewPersonInput, Person, PersonPatchInput, PersonRepository};
 
 pub use error::ServiceError;
 

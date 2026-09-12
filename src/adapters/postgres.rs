@@ -1,8 +1,7 @@
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{FromRow, PgPool, Row};
 
-use super::{PersonRepository, RepositoryError};
-use crate::domain::{NewPerson, Person, PersonPatch};
+use crate::domain::{NewPerson, Person, PersonPatch, PersonRepository, RepositoryError};
 
 const COLUMNS: &str = "id, name, age, address, work";
 

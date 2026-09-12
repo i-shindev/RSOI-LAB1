@@ -1,5 +1,4 @@
-use crate::domain::ValidationErrors;
-use crate::repository::RepositoryError;
+use crate::domain::{RepositoryError, ValidationErrors};
 
 #[derive(Debug)]
 pub enum ServiceError {

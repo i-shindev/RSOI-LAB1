@@ -1,14 +1,14 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+mod adapters;
 mod api;
 mod config;
 mod domain;
-mod repository;
 mod service;
 
+use crate::adapters::PgPersonRepository;
 use crate::config::Config;
-use crate::repository::PgPersonRepository;
 use crate::service::PersonService;
 
 #[tokio::main]
